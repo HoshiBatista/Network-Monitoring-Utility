@@ -441,3 +441,91 @@ To auto-fix lint and formatting issues:
 ruff check . --fix
 ruff format .
 ```
+
+---
+
+## UI Input Testing Data
+
+Ready-to-paste values for the **Add Node** and **Update Node** forms in the Streamlit dashboard.
+
+### Add Node — valid entries (ONLINE expected)
+
+| Address           | Port  | Notes                          |
+|-------------------|-------|--------------------------------|
+| `8.8.8.8`         | `53`  | Google Public DNS              |
+| `1.1.1.1`         | `53`  | Cloudflare DNS                 |
+| `8.8.4.4`         | `53`  | Google DNS secondary           |
+| `9.9.9.9`         | `53`  | Quad9 DNS                      |
+| `github.com`      | `443` | HTTPS — hostname resolution    |
+| `cloudflare.com`  | `443` | HTTPS                          |
+| `google.com`      | `80`  | HTTP                           |
+| `httpbin.org`     | `80`  | HTTP test service              |
+| `1.1.1.1`         |       | ICMP-only (leave Port blank)   |
+| `localhost`       | `8000`| Local FastAPI backend          |
+| `127.0.0.1`       | `8000`| Local FastAPI backend (IP)     |
+
+### Add Node — unreachable entries (OFFLINE expected)
+
+| Address           | Port   | Notes                              |
+|-------------------|--------|------------------------------------|
+| `192.168.99.99`   | `9999` | Private range, nothing listening   |
+| `10.0.0.254`      | `8080` | Private range, nothing listening   |
+| `203.0.113.1`     | `443`  | RFC 5737 documentation range       |
+| `192.0.2.100`     |        | TEST-NET-1, no route (ICMP only)   |
+| `dead.invalid`    | `80`   | Invalid hostname — DNS will fail   |
+
+### Add Node — validation edge cases
+
+| Address                  | Port    | Expected behaviour                     |
+|--------------------------|---------|----------------------------------------|
+| *(empty)*                | `80`    | Warning — address is required          |
+| `8.8.8.8` *(duplicate)*  | `53`    | Error — 409 Conflict                   |
+| `google.com`             | `0`     | Ignored — port 0 sent as "no port"     |
+| `google.com`             | `65535` | Accepted — maximum valid port          |
+| `google.com`             | `65536` | Should be rejected by form             |
+| `a`                      | `443`   | Accepted — min_length is 1             |
+
+### Update Node — test scenarios
+
+Apply these on an existing node (e.g. the one created with `8.8.8.8`):
+
+| Field    | New value    | Notes                                   |
+|----------|--------------|-----------------------------------------|
+| Port     | `443`        | Switch from 53 → HTTPS                  |
+| Port     | *(blank)*    | Remove port — switches to ICMP-only     |
+| Address  | `9.9.9.9`    | Change to Quad9 DNS                     |
+| Address  | *(address already used by another node)* | Should show 409 error |
+
+### Sidebar settings — test values
+
+| Setting          | Value                    | Notes                                  |
+|------------------|--------------------------|----------------------------------------|
+| API URL          | `http://localhost:8000`  | Default — backend running locally      |
+| API URL          | `http://127.0.0.1:8000`  | Equivalent alternate form              |
+| API URL          | `http://localhost:9999`  | Wrong port — header shows API error    |
+| Refresh interval | `5`                      | Fastest practical refresh (seconds)    |
+| Refresh interval | `30`                     | Slower polling                         |
+| Log limit        | `10`                     | Show only last 10 status-change events |
+| Log limit        | `500`                    | High-volume history view               |
+
+### Quick seed script
+
+Populates the database with a mixed set of nodes in one go:
+
+```bash
+BASE=http://localhost:8000/nodes
+for payload in \
+  '{"address":"8.8.8.8","port":53}' \
+  '{"address":"1.1.1.1","port":53}' \
+  '{"address":"8.8.4.4","port":53}' \
+  '{"address":"9.9.9.9","port":53}' \
+  '{"address":"github.com","port":443}' \
+  '{"address":"cloudflare.com","port":443}' \
+  '{"address":"192.168.99.99","port":9999}' \
+  '{"address":"10.0.0.254","port":8080}' \
+  '{"address":"dead.invalid","port":80}'; do
+  curl -s -X POST "$BASE" \
+    -H "Content-Type: application/json" \
+    -d "$payload" | python3 -m json.tool
+done
+```

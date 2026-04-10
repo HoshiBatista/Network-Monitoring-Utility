@@ -1,9 +1,15 @@
+from __future__ import annotations
+
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
+
+if TYPE_CHECKING:
+    from app.models.node import Node
 
 
 class StatusLog(Base):
@@ -19,4 +25,4 @@ class StatusLog(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    node: Mapped["Node"] = relationship("Node", back_populates="logs")  # noqa: F821
+    node: Mapped[Node] = relationship("Node", back_populates="logs")

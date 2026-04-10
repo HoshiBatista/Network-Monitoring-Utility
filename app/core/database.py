@@ -25,14 +25,13 @@ AsyncSessionLocal = async_sessionmaker(
 
 async def init_db() -> None:
     """Create all tables on startup."""
-    # Import models so their metadata is registered before create_all.
-    import app.models  # noqa: F401
+    import app.models  # noqa: F401 — ensure ORM metadata is registered before create_all
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
-    """FastAPI dependency that provides a scoped async session."""
+    """FastAPI dependency — yields a scoped async session, closed after each request."""
     async with AsyncSessionLocal() as session:
         yield session

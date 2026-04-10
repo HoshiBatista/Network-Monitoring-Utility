@@ -85,28 +85,38 @@ p, li { color: #8b949e; }
 }
 
 /* ── Buttons ─────────────────────────────────────────── */
-.stButton > button {
-  background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+/* Primary (default) buttons — green */
+[data-testid="baseButton-primary"],
+[data-testid="baseButton-secondaryFormSubmit"] {
+  background: linear-gradient(135deg, #238636 0%, #2ea043 100%) !important;
   color: #fff !important;
   border: none !important;
-  border-radius: 8px;
-  font-weight: 600;
-  padding: 0.45rem 1.1rem;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba(46,160,67,0.3);
+  border-radius: 8px !important;
+  font-weight: 600 !important;
+  padding: 0.45rem 1.1rem !important;
+  transition: all 0.2s !important;
+  box-shadow: 0 2px 8px rgba(46,160,67,0.3) !important;
 }
-.stButton > button:hover {
+[data-testid="baseButton-primary"]:hover,
+[data-testid="baseButton-secondaryFormSubmit"]:hover {
   background: linear-gradient(135deg, #2ea043 0%, #3fb950 100%) !important;
   box-shadow: 0 4px 16px rgba(46,160,67,0.5) !important;
   transform: translateY(-1px);
 }
-.stButton > button[kind="secondary"] {
+/* Secondary buttons — red (used for destructive actions like Delete) */
+[data-testid="baseButton-secondary"] {
   background: linear-gradient(135deg, #b62324 0%, #da3633 100%) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 8px !important;
+  font-weight: 600 !important;
   box-shadow: 0 2px 8px rgba(218,54,51,0.3) !important;
+  transition: all 0.2s !important;
 }
-.stButton > button[kind="secondary"]:hover {
+[data-testid="baseButton-secondary"]:hover {
   background: linear-gradient(135deg, #da3633 0%, #f85149 100%) !important;
   box-shadow: 0 4px 16px rgba(218,54,51,0.5) !important;
+  transform: translateY(-1px);
 }
 
 /* ── Inputs ──────────────────────────────────────────── */
@@ -312,7 +322,13 @@ def _get(path: str, params: dict | None = None) -> tuple[object, bool]:
         )
         r.raise_for_status()
         return r.json(), True
-    except Exception:
+    except requests.exceptions.ConnectionError:
+        return None, False
+    except requests.exceptions.Timeout:
+        st.warning("Request timed out. The backend may be overloaded.")
+        return None, False
+    except requests.exceptions.HTTPError as exc:
+        st.warning(f"API returned {exc.response.status_code} for {path}")
         return None, False
 
 
@@ -323,8 +339,12 @@ def _post(path: str, payload: dict) -> tuple[dict | None, int | None]:
             json=payload,
             timeout=5,
         )
-        return r.json() if r.content else None, r.status_code
-    except Exception:
+        body = r.json() if r.content else None
+        return body, r.status_code
+    except requests.exceptions.ConnectionError:
+        return None, None
+    except requests.exceptions.Timeout:
+        st.warning("Request timed out.")
         return None, None
 
 
@@ -332,7 +352,7 @@ def _delete(path: str) -> bool:
     try:
         r = requests.delete(f"{st.session_state.api_url}{path}", timeout=5)
         return r.status_code == 204
-    except Exception:
+    except requests.exceptions.RequestException:
         return False
 
 

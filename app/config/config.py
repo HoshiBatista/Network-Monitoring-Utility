@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -26,9 +24,9 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
 
     # Logging — file sink (disabled when log_file is empty / not set)
-    log_file: Optional[str] = None
-    log_rotation: str = "10 MB"   # rotate when file reaches this size
-    log_retention: str = "1 week" # delete rotated files older than this
+    log_file: str | None = None
+    log_rotation: str = "10 MB"    # rotate when file reaches this size
+    log_retention: str = "1 week"  # delete rotated files older than this
 
     # Server (used by uvicorn entry-point)
     host: str = "0.0.0.0"

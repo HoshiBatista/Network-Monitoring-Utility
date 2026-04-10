@@ -7,6 +7,7 @@ from app.api.router import api_router
 from app.config import settings
 from app.core.database import init_db
 from app.core.logger import setup_logging
+from app.services.scheduler import start_scheduler, stop_scheduler
 
 setup_logging()
 
@@ -16,7 +17,9 @@ async def lifespan(app: FastAPI):
     logger.info("Starting up — initialising database...")
     await init_db()
     logger.success("Database ready.")
+    start_scheduler()
     yield
+    stop_scheduler()
     logger.info("Shutting down.")
 
 

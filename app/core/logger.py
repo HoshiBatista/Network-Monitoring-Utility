@@ -16,7 +16,6 @@ Level → colour mapping (Loguru defaults, customised below):
 
 import logging
 import sys
-from typing import Union
 
 from loguru import logger
 
@@ -69,7 +68,7 @@ class _InterceptHandler(logging.Handler):
 
     def emit(self, record: logging.LogRecord) -> None:
         try:
-            level: Union[str, int] = logger.level(record.levelname).name
+            level: str | int = logger.level(record.levelname).name
         except ValueError:
             level = record.levelno
 
