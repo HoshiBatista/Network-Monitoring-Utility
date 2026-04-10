@@ -27,18 +27,12 @@ from app.models.node import Node, NodeStatus
 from app.models.status_log import StatusLog
 
 
-# ─── Per-node result ─────────────────────────────────────────────────────────
-
-
 @dataclass(slots=True)
 class CheckResult:
     node_id: int
     address: str
     status: NodeStatus
-    latency_ms: float | None  # None when unreachable
-
-
-# ─── Check strategies ────────────────────────────────────────────────────────
+    latency_ms: float | None 
 
 
 async def _tcp_check(
@@ -134,18 +128,15 @@ async def run_checks() -> None:
         for res in results:
             node = await session.get(Node, res.node_id)
             if node is None:
-                # Node was deleted between the fetch and the persist step.
                 continue
 
             old_status = NodeStatus(node.last_status)
             new_status = res.status
 
-            # ── Persist updated fields ────────────────────────────────────
             node.last_status = new_status.value
             node.last_latency = res.latency_ms
             node.last_check_at = now
 
-            # ── State-change detection ────────────────────────────────────
             if old_status != new_status:
                 session.add(
                     StatusLog(
