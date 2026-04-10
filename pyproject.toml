@@ -3,7 +3,6 @@ asyncio_mode   = "auto"
 testpaths      = ["tests"]
 addopts        = "-ra -q"
 
-# ── Ruff ─────────────────────────────────────────────────────────────────────
 [tool.ruff]
 line-length    = 120
 target-version = "py313"
@@ -12,7 +11,7 @@ exclude        = [".venv", "venv", "__pycache__"]
 [tool.ruff.lint]
 select = ["E9", "F", "I"]
 ignore = [
-  "F821",   # forward refs in SQLAlchemy relationship() strings
+  "F821",   
 ]
 
 [tool.ruff.lint.isort]
