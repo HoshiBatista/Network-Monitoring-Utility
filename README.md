@@ -9,7 +9,7 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.56-FF4B4B?style=flat&logo=streamlit&logoColor=white)](https://streamlit.io)
 [![SQLite](https://img.shields.io/badge/SQLite-aiosqlite-003B57?style=flat&logo=sqlite&logoColor=white)](https://sqlite.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat)](LICENSE)
-[![CI](https://img.shields.io/github/actions/workflow/status/HoshiBatista/network-monitoring-utility/ci.yml?style=flat&logo=github-actions&logoColor=white&label=CI)](../../actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/HoshiBatista/Network-Monitoring-Utility/ci.yml?style=flat&logo=github-actions&logoColor=white&label=CI)](../../actions)
 
 </div>
 
